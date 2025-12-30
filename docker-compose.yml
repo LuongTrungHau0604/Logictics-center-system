@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. DATABASE SERVICE (MySQL)
+  # ==========================================
+  db_logistics:
+    image: mysql:8.0
+    container_name: db_logistics_container
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    environment:
+      MYSQL_ROOT_PASSWORD: "Hau0925464587@"
+      MYSQL_DATABASE: "cuoiki_soa"
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # ==========================================
+  # 2. AI AGENT SERVICE
+  # ==========================================
+  ai-agent:
+    build: 
+      context: ./services/ai-agent-service
+      dockerfile: Dockerfile
+    container_name: ai_agent_service
+    ports:
+      - "8002:8002"
+    depends_on:
+      db_logistics:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db_logistics
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=Hau0925464587@
+      - DB_NAME=cuoiki_soa
+      - DATABASE_URL=mysql+aiomysql://root:Hau0925464587%40@db_logistics:3306/cuoiki_soa
+
+  # ==========================================
+  # 3. IDENTITY SERVICE
+  # ==========================================
+  identity:
+    build: 
+      context: ./services/identity-service
+      dockerfile: Dockerfile
+    container_name: identity_service
+    ports:
+      - "8000:8000"
+    depends_on:
+      db_logistics:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db_logistics
+      - DB_USER=root
+      - DB_PASSWORD=Hau0925464587@
+      - DB_NAME=cuoiki_soa
+      - SECRET_KEY=your_very_long_secret_key_at_least_32_characters_long_12345
+
+  # ==========================================
+  # 4. ORDER SERVICE (Đã sửa lỗi kết nối)
+  # ==========================================
+  order:
+    build: 
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    container_name: order_service
+    ports:
+      - "8001:8001"
+    depends_on:
+      db_logistics:
+        condition: service_healthy
+      identity:
+        condition: service_started
+    environment:
+      - DB_HOST=db_logistics
+      - DB_USER=root
+      - DB_PASSWORD=Hau0925464587@
+      - DB_NAME=cuoiki_soa
+      # ✅ QUAN TRỌNG: Dùng tên service "identity" thay vì localhost
+      - IDENTITY_SERVICE_URL=http://identity:8000/api/v1
+
+  # ==========================================
+  # 5. FRONTEND SERVICE (React)
+  # ==========================================
+  frontend:
+    build:
+      context: ./FE/AI-Powered-Transportation-Hub-for-SMEs
+      dockerfile: Dockerfile
+    container_name: react_frontend
+    ports:
+      - "3000:80" 
+    depends_on:
+      - identity
+      - order
+      - ai-agent
+    environment:
+      # React chạy ở trình duyệt máy khách nên vẫn phải trỏ về localhost
+      - REACT_APP_IDENTITY_API=http://localhost:8000
+      - REACT_APP_ORDER_API=http://localhost:8001
+      - REACT_APP_AI_API=http://localhost:8002
+
+volumes:
+  db_data:

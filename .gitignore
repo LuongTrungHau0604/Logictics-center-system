@@ -1,0 +1,21 @@
+# Chặn tất cả các file có tên là .env ở bất kỳ đâu trong dự án
+.env
+.env.local
+.env.*
+
+# Chặn các folder thư viện (cho cả Python và Node.js)
+__pycache__/
+node_modules/
+venv/
+.venv/
+
+# Chặn các file cấu hình nhạy cảm khác
+*.pyc
+.DS_Store
+dist/
+build/
+
+# Chặn các file key của Firebase/Google Cloud
+serviceAccountKey.json
+firebase-adminsdk*.json
+*.json

@@ -1,0 +1,28 @@
+# --- Core ---
+fastapi
+uvicorn
+httpx
+requests
+pydantic
+pydantic-settings
+sqlalchemy
+aiomysql
+
+# --- Auth & Security ---
+python-jose[cryptography]
+passlib[bcrypt]
+PyJWT
+
+# --- Google / AI Services ---
+# Bỏ version để tránh xung đột google-api-core
+google-generativeai
+firebase-admin
+
+# --- Scheduling ---
+apscheduler
+
+# --- Utilities ---
+email-validator
+
+openai
+groq
