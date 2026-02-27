@@ -56,7 +56,6 @@ Phase 2 (Middle Mile): Hub → Satellite → Customer
 - **GPS Background Tracking**: Expo Location Service (update mỗi 30s)
 - **Multi-vehicle Support**: Motorbike (Last Mile) + Truck (Middle Mile)
 - **Smart Assignment**: Dựa trên capacity, workload, GPS location
-- **Shift Management**: Check-in/out, break time, overtime
 - **Performance Analytics**: Delivery rate, average time, distance covered
 
 ### 🏢 Warehouse Management
